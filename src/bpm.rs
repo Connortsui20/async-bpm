@@ -19,16 +19,14 @@ use crate::{
 use core::slice;
 use rand::Rng;
 use send_wrapper::SendWrapper;
+use std::sync::RwLock;
 use std::{
     collections::HashMap,
     io::IoSliceMut,
     rc::Rc,
     sync::{Arc, OnceLock},
 };
-use tokio::{
-    runtime::{Builder, Runtime},
-    sync::RwLock,
-};
+use tokio::runtime::{Builder, Runtime};
 
 /// The global buffer pool manager instance.
 static BPM: OnceLock<BufferPoolManager> = OnceLock::new();
@@ -157,9 +155,9 @@ impl BufferPoolManager {
     /// the logical page data.
     ///
     /// If the page already exists, this function will return that instead.
-    async fn create_page(&self, pid: &PageId) -> PageHandle {
+    fn create_page(&self, pid: &PageId) -> PageHandle {
         // First check if it exists already
-        let mut pages_guard = self.pages.write().await;
+        let mut pages_guard = self.pages.write().expect("Pages RwLock was poisoned");
         if let Some(page) = pages_guard.get(pid) {
             return PageHandle::new(page.clone(), StorageManager::get().create_handle());
         }
@@ -167,7 +165,7 @@ impl BufferPoolManager {
         // Create the new page and update the global map of pages
         let page = Arc::new(Page {
             pid: *pid,
-            inner: RwLock::new(None),
+            inner: tokio::sync::RwLock::new(None),
         });
 
         pages_guard.insert(*pid, page.clone());
@@ -180,19 +178,21 @@ impl BufferPoolManager {
     /// the logical page data.
     ///
     /// If the page does not already exist, this function will create it and then return it.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the lock protecting the page table is poisoned.
     pub async fn get_page(&self, pid: &PageId) -> PageHandle {
-        let pages_guard = self.pages.read().await;
-
-        // Get the page if it exists, otherwise create it and return
-        let page = match pages_guard.get(pid) {
-            Some(page) => page.clone(),
-            None => {
-                drop(pages_guard);
-                return self.create_page(pid).await;
+        {
+            // Get the page if it exists
+            let pages_guard = self.pages.read().expect("Pages RwLock was poisoned");
+            if let Some(page) = pages_guard.get(pid) {
+                return PageHandle::new(page.clone(), StorageManager::get().create_handle());
             }
-        };
+        }
 
-        PageHandle::new(page, StorageManager::get().create_handle())
+        // Otherwise, create it and return
+        self.create_page(pid)
     }
 
     /// Creates a thread-local [`StorageManagerHandle`] to the inner [`StorageManager`].
