@@ -1,16 +1,16 @@
 use async_bpm::{
-    page::{PageId, PAGE_SIZE},
     BufferPoolManager, IO_OPERATIONS,
+    page::{PAGE_SIZE, PageId},
 };
 use core_affinity::CoreId;
 use rand::rng;
-use rand::{distr::Distribution, Rng};
+use rand::{Rng, distr::Distribution};
 use rand_distr::Zipf;
 use std::{
     ops::{Deref, DerefMut},
     sync::{
-        atomic::{AtomicUsize, Ordering},
         Arc,
+        atomic::{AtomicUsize, Ordering},
     },
     thread,
 };
@@ -63,7 +63,9 @@ const READ: bool = true;
 fn throughput() {
     tracing_subscriber::fmt::init();
 
-    info!("Find tasks: {FIND_TASKS}, Find Threads: {FIND_THREADS}, Scan Tasks: {SCAN_TASKS}, Scan Threads: {SCAN_THREADS}");
+    info!(
+        "Find tasks: {FIND_TASKS}, Find Threads: {FIND_THREADS}, Scan Tasks: {SCAN_TASKS}, Scan Threads: {SCAN_THREADS}"
+    );
 
     BufferPoolManager::initialize(FRAMES, STORAGE_PAGES);
 

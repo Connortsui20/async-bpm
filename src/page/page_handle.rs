@@ -6,14 +6,14 @@
 //! one of the methods on [`PageHandle`].
 
 use crate::bpm::BufferPoolManager;
-use crate::page::page_guard::{ReadPageGuard, WritePageGuard};
 use crate::page::Page;
+use crate::page::page_guard::{ReadPageGuard, WritePageGuard};
 use crate::storage::{Frame, StorageManagerHandle};
 use derivative::Derivative;
 use std::io::Result;
 use std::ops::Deref;
-use std::sync::atomic::Ordering;
 use std::sync::Arc;
+use std::sync::atomic::Ordering;
 use tokio::sync::RwLockWriteGuard;
 use tracing::field::Empty;
 use tracing::{info, instrument, trace, warn};

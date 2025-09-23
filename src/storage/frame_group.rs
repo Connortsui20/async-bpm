@@ -10,8 +10,8 @@ use crate::storage::storage_manager::StorageManager;
 use async_channel::{Receiver, Sender};
 use std::io::Result;
 use std::sync::{
-    atomic::{AtomicUsize, Ordering},
     Arc, Mutex,
+    atomic::{AtomicUsize, Ordering},
 };
 
 /// The number of frames in a [`FrameGroup`].

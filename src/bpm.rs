@@ -10,12 +10,12 @@
 //! pool manager would work.
 
 use crate::{
-    page::{Page, PageHandle, PageId, PAGE_SIZE},
-    storage::{Frame, FrameGroup, StorageManager, FRAME_GROUP_SIZE},
+    page::{PAGE_SIZE, Page, PageHandle, PageId},
+    storage::{FRAME_GROUP_SIZE, Frame, FrameGroup, StorageManager},
 };
 use rand::prelude::*;
 use scc::HashMap;
-use std::sync::{atomic::AtomicBool, Arc, OnceLock};
+use std::sync::{Arc, OnceLock, atomic::AtomicBool};
 use std::{future::Future, io::Result};
 use tokio::sync::RwLock;
 use tokio::task;
