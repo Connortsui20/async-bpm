@@ -149,7 +149,7 @@ impl BufferPoolManager {
         // Get the page if it exists, otherwise create a new one return that.
         let page = self
             .pages
-            .entry(*pid)
+            .entry_sync(*pid)
             .or_insert_with(|| {
                 trace!("Creating a new `Page`.");
 
@@ -174,8 +174,8 @@ impl BufferPoolManager {
     ///
     /// Intended for use by an eviction algorithm.
     pub(crate) fn get_random_frame_group(&self) -> Arc<FrameGroup> {
-        let mut rng = rand::thread_rng();
-        let index = rng.gen_range(0..self.frame_groups.len());
+        let mut rng = rand::rng();
+        let index = rng.random_range(0..self.frame_groups.len());
 
         self.get_frame_group(index)
     }

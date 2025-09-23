@@ -3,8 +3,9 @@ use async_bpm::{
     BufferPoolManager, IO_OPERATIONS,
 };
 use core_affinity::CoreId;
-use rand::thread_rng;
-use rand::{distributions::Distribution, Rng};
+use rand::rng;
+use rand::{distr::Distribution, Rng};
+use rand_distr::Zipf;
 use std::{
     ops::{Deref, DerefMut},
     sync::{
@@ -18,7 +19,6 @@ use tokio::{
     task::{JoinHandle, JoinSet},
 };
 use tracing::info;
-use zipf::ZipfDistribution;
 
 const SECONDS: usize = 300;
 
@@ -178,8 +178,8 @@ fn spawn_find_task(barrier: Arc<Barrier>) -> JoinHandle<()> {
     let bpm = BufferPoolManager::get();
 
     // Since half of the threads are solely reading, we double the writers here.
-    let zipf = ZipfDistribution::new(STORAGE_PAGES, ZIPF_EXP).unwrap();
-    let mut rng = rand::thread_rng();
+    let zipf = Zipf::new(STORAGE_PAGES as f64, ZIPF_EXP).unwrap();
+    let mut rng = rand::rng();
 
     BufferPoolManager::spawn_local(async move {
         let mut handles = Vec::with_capacity(TASK_ACCESSES);
@@ -211,8 +211,8 @@ fn spawn_scan_task(barrier: Arc<Barrier>) -> JoinHandle<()> {
     BufferPoolManager::spawn_local(async move {
         barrier.wait().await;
 
-        let mut rng = thread_rng();
-        let start = rng.gen_range(0..STORAGE_PAGES);
+        let mut rng = rng();
+        let start = rng.random_range(0..STORAGE_PAGES);
 
         // Continuously scan all pages.
         loop {

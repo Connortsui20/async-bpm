@@ -44,7 +44,7 @@ impl PageHandle {
     ///
     /// Raises an error if an I/O error occurs while trying to load the data from disk into memory.
     #[instrument(skip(self), err, fields(page = ?self.page.pid))]
-    pub async fn read(&self) -> Result<ReadPageGuard> {
+    pub async fn read(&self) -> Result<ReadPageGuard<'_>> {
         info!("Reading `PageHandle`.");
 
         // Optimization: attempt to read only if we observe that the `is_loaded` flag is set.
@@ -84,7 +84,7 @@ impl PageHandle {
     ///
     /// Raises an error if an I/O error occurs while trying to load the data from disk into memory.
     #[instrument(skip(self), err, fields(page = ?self.page.pid))]
-    pub async fn try_read(&self) -> Result<Option<ReadPageGuard>> {
+    pub async fn try_read(&self) -> Result<Option<ReadPageGuard<'_>>> {
         info!("Trying to read `PageHandle`.");
 
         // Optimization: attempt to read only if we observe that the `is_loaded` flag is set.
@@ -127,7 +127,7 @@ impl PageHandle {
     ///
     /// Raises an error if an I/O error occurs while trying to load the data from disk into memory.
     #[instrument(skip(self), err, fields(page = ?self.page.pid))]
-    pub async fn write(&self) -> Result<WritePageGuard> {
+    pub async fn write(&self) -> Result<WritePageGuard<'_>> {
         info!("Writing `PageHandle`.");
 
         let mut write_guard = self.page.frame.write().await;
@@ -157,7 +157,7 @@ impl PageHandle {
     ///
     /// Raises an error if an I/O error occurs while trying to load the data from disk into memory.
     #[instrument(skip(self), err, fields(page = ?self.page.pid))]
-    pub async fn try_write(&self) -> Result<Option<WritePageGuard>> {
+    pub async fn try_write(&self) -> Result<Option<WritePageGuard<'_>>> {
         info!("Trying to write `PageHandle`.");
 
         let Ok(mut write_guard) = self.page.frame.try_write() else {
