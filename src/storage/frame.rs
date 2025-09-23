@@ -4,10 +4,10 @@
 //! with the the kernel to avoid unnecessary `memcpy`s from the kernel's internal buffers into
 //! user-space buffers.
 
-use crate::storage::frame_group::{EvictionState, FrameGroup, FRAME_GROUP_SIZE};
+use crate::storage::frame_group::{EvictionState, FRAME_GROUP_SIZE, FrameGroup};
 use crate::{
     bpm::BufferPoolManager,
-    page::{Page, PAGE_SIZE},
+    page::{PAGE_SIZE, Page},
 };
 use std::{
     ops::{Deref, DerefMut},
